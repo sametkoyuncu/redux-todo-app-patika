@@ -1,7 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { useDispatch } from 'react-redux'
-
 export const todosSlice = createSlice({
   name: 'todos',
   initialState: {
@@ -33,6 +31,26 @@ export const todosSlice = createSlice({
     },
   }, // reducers is an object with the same name as the slice
 })
+
+export const selectTodos = (state) => state.todos.items
+// is this necessary? think about it before you use it
+export const selectFilteredTodos = (state) => {
+  const items = state.todos.items
+  const activeFilter = state.todos.activeFilter
+  let filtered
+  switch (activeFilter) {
+    case 'active':
+      filtered = items.filter((item) => !item.completed)
+      break
+    case 'completed':
+      filtered = items.filter((item) => item.completed)
+      break
+    default:
+      filtered = items
+      break
+  }
+  return filtered
+}
 
 export const { addTodo, toggle, destroy, setActiveFilter, clearCompleted } =
   todosSlice.actions // actions is an object with the same name as the slice

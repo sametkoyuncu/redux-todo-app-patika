@@ -1,14 +1,11 @@
 import React from 'react'
 
 import { useSelector, useDispatch } from 'react-redux'
-import { toggle, destroy } from '../redux/todos/todosSlice'
+import { toggle, destroy, selectFilteredTodos } from '../redux/todos/todosSlice'
 
 const TodoList = () => {
-  const items = useSelector((state) => state.todos.items)
-  const activeFilter = useSelector((state) => state.todos.activeFilter)
+  const filteredTodos = useSelector(selectFilteredTodos)
   const dispatch = useDispatch()
-
-  let filtered
 
   const handleDestroy = (id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
@@ -16,24 +13,9 @@ const TodoList = () => {
     }
   }
 
-  switch (activeFilter) {
-    case 'all':
-      filtered = items
-      break
-    case 'active':
-      filtered = items.filter((item) => !item.completed)
-      break
-    case 'completed':
-      filtered = items.filter((item) => item.completed)
-      break
-    default:
-      filtered = items
-      break
-  }
-
   return (
     <ul className="todo-list">
-      {filtered.map((item) => (
+      {filteredTodos.map((item) => (
         <li key={item.id} className={item.completed ? 'completed' : ''}>
           <div className="view">
             <input
@@ -43,7 +25,7 @@ const TodoList = () => {
               onChange={() => {
                 dispatch(
                   toggle({
-                    index: items.indexOf(item),
+                    index: filteredTodos.indexOf(item),
                     completed: !item.completed,
                   })
                 )
