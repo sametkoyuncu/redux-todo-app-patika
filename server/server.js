@@ -1,16 +1,16 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const colors = require('colors');
-const cors = require('cors');
-const { json } = require('body-parser');
-const { nanoid } = require('nanoid');
+const express = require('express')
+const dotenv = require('dotenv')
+const colors = require('colors')
+const cors = require('cors')
+const { json } = require('body-parser')
+const { nanoid } = require('nanoid')
 
-dotenv.config({ path: './config.env' });
+dotenv.config({ path: './config.env' })
 
-const app = express();
+const app = express()
 
-app.use(cors());
-app.use(json());
+app.use(cors())
+app.use(json())
 
 let todos = [
   {
@@ -38,36 +38,41 @@ let todos = [
     title: 'todo 5',
     completed: false,
   },
-];
+]
 
-app.get('/todos', (req, res) => res.send(todos));
+app.get('/todos', (req, res) => res.send(todos))
 
 app.post('/todos', (req, res) => {
-  const todo = { title: req.body.title, id: nanoid(), completed: false };
-  todos.push(todo);
-  return res.send(todo);
-});
+  const todo = { title: req.body.title, id: nanoid(), completed: false }
+  todos.push(todo)
+  return res.send(todo)
+})
 
 app.patch('/todos/:id', (req, res) => {
-  const id = req.params.id;
-  const index = todos.findIndex((todo) => todo.id == id);
-  const completed = Boolean(req.body.completed);
+  const id = req.params.id
+  const index = todos.findIndex((todo) => todo.id == id)
+  const completed = Boolean(req.body.completed)
   if (index > -1) {
-    todos[index].completed = completed;
+    todos[index].completed = completed
   }
-  return res.send(todos[index]);
-});
+  return res.send(todos[index])
+})
 
 app.delete('/todos/:id', (req, res) => {
-  const id = req.params.id;
-  const index = todos.findIndex((todo) => todo.id == id);
+  const id = req.params.id
+  const index = todos.findIndex((todo) => todo.id == id)
   if (index > -1) {
-    todos.splice(index, 1);
+    todos.splice(index, 1)
   }
 
-  res.send(todos);
-});
+  res.send(todos)
+})
 
-const PORT = 7000;
+app.delete('/todos/clearCompleted', (req, res) => {
+  todos = todos.filter((todo) => !todo.completed)
+  return res.send(todos)
+})
 
-app.listen(PORT, console.log(`Server running on port ${PORT}`.green.bold));
+const PORT = 7000
+
+app.listen(PORT, console.log(`Server running on port ${PORT}`.green.bold))

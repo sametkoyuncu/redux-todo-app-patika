@@ -1,26 +1,12 @@
-import { createAsyncThunk, createSlice, nanoid } from '@reduxjs/toolkit'
+import { createSlice, nanoid } from '@reduxjs/toolkit'
 
-export const getTodosAsync = createAsyncThunk(
-  'todos/getTodosAsync',
-  async () => {
-    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/todos`)
-    return await res.json()
-  }
-)
-
-export const addTodoAsync = createAsyncThunk(
-  'todos/addTodoAsync',
-  async (title) => {
-    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/todos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ title }),
-    })
-    return await res.json()
-  }
-)
+import {
+  getTodosAsync,
+  addTodoAsync,
+  toggleTodoAsync,
+  removeTodoAsync,
+  removeCompletedTodosAsync,
+} from './services'
 
 export const todosSlice = createSlice({
   name: 'todos',
@@ -28,9 +14,11 @@ export const todosSlice = createSlice({
     items: [],
     isLoading: false,
     error: null,
-    activeFilter: 'all',
-    addNewTodoIsLoading: false,
-    addNewTodoError: null,
+    activeFilter: localStorage.getItem('activeFilter') || 'all',
+    addNewTodo: {
+      isLoading: false,
+      error: null,
+    },
   },
   reducers: {
     //todo: we don't need this because we are using the addTodoAsync thunk fro api call but we can use this if we want to add todos to the state
@@ -79,15 +67,31 @@ export const todosSlice = createSlice({
     },
     // add todo
     [addTodoAsync.pending]: (state, action) => {
-      state.addNewTodoIsLoading = true
+      state.addNewTodo.isLoading = true
     },
     [addTodoAsync.fulfilled]: (state, action) => {
       state.items.push(action.payload)
-      state.addNewTodoIsLoading = false
+      state.addNewTodo.isLoading = false
     },
     [addTodoAsync.rejected]: (state, action) => {
-      state.addNewTodoError = action.error.message
-      state.addNewTodoIsLoading = false
+      state.addNewTodo.error = action.error.message
+      state.addNewTodo.isLoading = false
+    },
+    // toogle todo
+    [toggleTodoAsync.fulfilled]: (state, action) => {
+      const { id, completed } = action.payload
+      const index = state.items.findIndex((item) => item.id === id)
+      state.items[index].completed = completed
+    },
+    // delete todo
+    [removeTodoAsync.fulfilled]: (state, action) => {
+      const id = action.payload
+      const index = state.items.findIndex((item) => item.id === id)
+      state.items.splice(index, 1)
+    },
+    // delete all todos
+    [removeCompletedTodosAsync.fulfilled]: (state, action) => {
+      state.items = state.items.filter((item) => !item.completed)
     },
   },
 })
