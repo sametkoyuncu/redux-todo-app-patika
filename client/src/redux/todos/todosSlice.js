@@ -3,7 +3,21 @@ import { createAsyncThunk, createSlice, nanoid } from '@reduxjs/toolkit'
 export const getTodosAsync = createAsyncThunk(
   'todos/getTodosAsync',
   async () => {
-    const res = await fetch('http://localhost:7000/todos')
+    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/todos`)
+    return await res.json()
+  }
+)
+
+export const addTodoAsync = createAsyncThunk(
+  'todos/addTodoAsync',
+  async (title) => {
+    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/todos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ title }),
+    })
     return await res.json()
   }
 )
@@ -15,8 +29,11 @@ export const todosSlice = createSlice({
     isLoading: false,
     error: null,
     activeFilter: 'all',
+    addNewTodoIsLoading: false,
+    addNewTodoError: null,
   },
   reducers: {
+    //todo: we don't need this because we are using the addTodoAsync thunk fro api call but we can use this if we want to add todos to the state
     addTodo: {
       reducer: (state, action) => {
         state.items.push(action.payload)
@@ -48,6 +65,7 @@ export const todosSlice = createSlice({
     },
   }, // reducers is an object with the same name as the slice
   extraReducers: {
+    // get todos
     [getTodosAsync.pending]: (state, action) => {
       state.isLoading = true
     },
@@ -58,7 +76,18 @@ export const todosSlice = createSlice({
     [getTodosAsync.rejected]: (state, action) => {
       state.error = action.error.message
       state.isLoading = false
-      console.log(action.error)
+    },
+    // add todo
+    [addTodoAsync.pending]: (state, action) => {
+      state.addNewTodoIsLoading = true
+    },
+    [addTodoAsync.fulfilled]: (state, action) => {
+      state.items.push(action.payload)
+      state.addNewTodoIsLoading = false
+    },
+    [addTodoAsync.rejected]: (state, action) => {
+      state.addNewTodoError = action.error.message
+      state.addNewTodoIsLoading = false
     },
   },
 })
